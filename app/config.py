@@ -11,16 +11,15 @@ def _bool(v, default=False):
     return str(v).lower() in ("1", "true", "t", "yes", "y", "on")
 
 def _normalize_db_url(url: str | None) -> str:
-    """
-    Normaliza esquemas antiguos 'postgres://' a 'postgresql://'.
-    No agrega ssl automáticamente: si conectas desde tu PC a la DB de Render,
-    usa la External URL con '?sslmode=require'.
-    """
     if not url:
         return ""
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
+    # fuerza el driver psycopg3 si la URL no lo trae
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
     return url
+
 
 class Config:
     # --- Flask / SQLAlchemy ---
