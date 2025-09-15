@@ -1,0 +1,187 @@
+{% extends 'base.html' %} {% block title %}Tratamientos · Animal #{{
+animal.animal_id }} · Patitas QR{% endblock %} {% block content %}
+<section class="list-page">
+  <header class="list-header">
+    <h2 class="list-title">
+      Tratamientos — Animal #{{ animal.animal_id }} {{ '(' ~ (animal.nombre or
+      '—') ~ ')' }}
+    </h2>
+    <div
+      class="header-actions"
+      style="display: flex; gap: 8px; flex-wrap: wrap"
+    >
+      <a
+        class="btn btn-outline btn-sm"
+        href="{{ url_for('animales.detalle_animal', animal_id=animal.animal_id) }}"
+        >← Volver a la ficha</a
+      >
+      <a
+        class="btn btn-outline btn-sm"
+        href="{{ url_for('animales.historial_animal', animal_id=animal.animal_id) }}"
+        >Ir al historial →</a
+      >
+    </div>
+  </header>
+
+  {% if animal.tratamientos and animal.tratamientos|length %}
+  <div class="table-wrap">
+    <table class="table table--list table-clickable">
+      <thead>
+        <tr>
+          <th style="width: 120px">Fecha</th>
+          <th style="width: 180px">Tipo</th>
+          <th style="width: 140px">Estado</th>
+          <th>Insumos</th>
+          <th style="width: 180px">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tratamientos %} {% set status = t.estado or '—' %} {% set
+        status_cls = 'pill-slate' %} {% if status == 'Pendiente' %}{% set
+        status_cls = 'pill-amber' %}{% endif %} {% if status in
+        ['Aprobado','Completado'] %}{% set status_cls = 'pill-green' %}{% endif
+        %} {% if status == 'Rechazado' %}{% set status_cls = 'pill-red' %}{%
+        endif %} {% set edit_url = url_for('tratamientos.tratamiento_edit',
+        tratamiento_id=t.tratamiento_id) %}
+
+        <tr
+          class="row-link"
+          data-href="{{ edit_url }}"
+          title="Ver/editar tratamiento"
+        >
+          <td>
+            <a class="row-anchor" href="{{ edit_url }}">
+              {{ t.fecha_tratamiento.strftime('%d-%m-%Y') if t.fecha_tratamiento
+              else '—' }}
+            </a>
+          </td>
+          <td><a class="row-anchor" href="{{ edit_url }}">{{ t.tipo }}</a></td>
+          <td><span class="pill {{ status_cls }}">{{ status }}</span></td>
+          <td>
+            {% if t.detalle_insumos and t.detalle_insumos|length %}
+            <ul class="detail-list">
+              {% for d in t.detalle_insumos %}
+              <li>
+                {{ d.insumo.nombre }} — {{ d.cantidad }} {{ d.insumo.unidad }}
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}—{% endif %}
+          </td>
+          <td class="actions">
+            {% if t.estado == 'Pendiente' and current_user.is_authenticated and
+            current_user.rol in ['veterinario','admin'] %}
+            <form
+              method="post"
+              action="{{ url_for('tratamientos.aprobar_tratamiento', tratamiento_id=t.tratamiento_id) }}"
+              class="inline-form"
+            >
+              <button type="submit" class="btn btn-primary btn-sm">
+                Aprobar
+              </button>
+            </form>
+            <form
+              method="post"
+              action="{{ url_for('tratamientos.rechazar_tratamiento', tratamiento_id=t.tratamiento_id) }}"
+              class="inline-form"
+            >
+              <button type="submit" class="btn btn-outline btn-sm btn-danger">
+                Rechazar
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">Sin tratamientos.</div>
+  {% endif %}
+  <h2 class="section-title">Nuevo tratamiento</h2>
+  <div class="card">
+    <form
+      method="post"
+      action="{{ url_for('tratamientos.crear_tratamiento') }}"
+      class="form-grid"
+    >
+      <input type="hidden" name="animal_id" value="{{ animal.animal_id }}" />
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="tipo">Tipo *</label>
+          <select id="tipo" name="tipo" required>
+            <option value="">— Seleccione —</option>
+            <option>Vacuna</option>
+            <option>Desparasitación</option>
+            <option>Curación</option>
+            <option>Cirugía</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="descripcion">Descripción</label>
+          <textarea
+            id="descripcion"
+            name="descripcion"
+            placeholder="Detalle breve del tratamiento"
+            type="text"
+            required
+          ></textarea>
+        </div>
+      </div>
+
+      <fieldset class="fieldset">
+        <legend>Insumos utilizados (opcional, múltiples líneas)</legend>
+        <div id="insumos-rows" class="insumos-rows">
+          <div class="row insumo-row">
+            <label class="lbl">Insumo</label>
+            <select name="insumo_id[]" required>
+              <option value="">—</option>
+              {% for i in insumos or [] %}
+              <option value="{{ i.insumo_id }}">
+                {{ i.nombre }} (stock: {{ i.stock }})
+              </option>
+              {% endfor %}
+            </select>
+
+            <label class="lbl qty">Cantidad</label>
+            <input
+              name="cantidad[]"
+              type="number"
+              step="0.01"
+              min="0.01"
+              placeholder="0.00"
+              required
+            />
+
+            <button
+              type="button"
+              class="btn btn-outline btn-sm btn-danger rm-row"
+              title="Quitar"
+            >
+              Quitar
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          id="add-row"
+          class="btn btn-outline btn-sm"
+          style="margin-top: 6px"
+        >
+          + Agregar insumo
+        </button>
+      </fieldset>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          Guardar (Pendiente)
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,65 @@
+<!--animal_edit.html-->
+{% extends 'base.html' %}
+{% block title %}Editar animal · Patitas QR{% endblock %}
+
+{% block content %}
+<section class="form-page">
+  <header class="list-header">
+    <h2 class="list-title">Editar animal #{{ animal.animal_id }}</h2>
+    <a class="btn btn-outline btn-sm btn-eq"
+       href="{{ url_for('animales.detalle_animal', animal_id=animal.animal_id) }}">← Volver</a>
+  </header>
+
+  <div class="card">
+    <form method="post"
+          action="{{ url_for('animales.guardar_edicion_animal', animal_id=animal.animal_id) }}"
+          class="form-grid">
+
+      <div class="field">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" type="text" name="nombre" value="{{ animal.nombre or '' }}" placeholder="Ej: Pelusa">
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="especie">Especie *</label>
+          <select id="especie" name="especie" required>
+            <option value="Perro" {{ 'selected' if animal.especie=='Perro' else '' }}>Perro</option>
+            <option value="Gato"  {{ 'selected' if animal.especie=='Gato'  else '' }}>Gato</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="sexo">Sexo</label>
+          <select id="sexo" name="sexo">
+            <option value="" {{ 'selected' if not animal.sexo else '' }}>Desconocido</option>
+            <option value="Macho"  {{ 'selected' if animal.sexo=='Macho' else '' }}>Macho</option>
+            <option value="Hembra" {{ 'selected' if animal.sexo=='Hembra' else '' }}>Hembra</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="color">Color</label>
+        <input id="color" type="text" name="color" value="{{ animal.color or '' }}" placeholder="Ej: Blanco">
+      </div>
+
+      <div class="field">
+        <label for="ubicacion_id">Ubicación</label>
+        <select id="ubicacion_id" name="ubicacion_id">
+          <option value="">—</option>
+          {% for u in ubicaciones %}
+            <option value="{{ u.ubicacion_id }}" {{ 'selected' if animal.ubicacion_id==u.ubicacion_id else '' }}>
+              {{ u.comuna }} — {{ u.nombre_sector }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-eq">Guardar</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

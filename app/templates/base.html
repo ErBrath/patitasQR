@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Patitas QR{% endblock %}</title>
+
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (t === "light" || t === "dark") {
+            document.documentElement.setAttribute("data-theme", t);
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='img/favicon.png') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/main.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/vet.css') }}"
+    />
+
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <header class="encabezado" role="banner">
+      <div class="encabezado__inner container">
+        <h1 class="encabezado__titulo">
+          <a
+            href="{{ url_for('animales.lista_animales') if current_user.is_authenticated else url_for('sessions.login') }}"
+            class="brand-link"
+          >
+            <span class="brand__paw" aria-hidden="true">🐾</span>
+            Patitas QR
+          </a>
+        </h1>
+
+        <div class="nav-wrap">
+          <!-- Botón hamburguesa (solo móviles) -->
+          <button
+            id="nav-toggle"
+            class="nav-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="nav-links"
+            aria-label="Abrir menú"
+          >
+            ☰
+          </button>
+
+          <nav class="navegacion" aria-label="principal">
+            <div id="nav-links" class="nav-links">
+              {% if current_user.is_authenticated %}
+              <a href="{{ url_for('animales.lista_animales') }}">Animales</a>
+              <a href="{{ url_for('insumos.lista_insumos') }}">Insumos</a>
+              <a href="{{ url_for('ubicaciones.lista_ubicaciones') }}"
+                >Ubicaciones</a
+              >
+              {% if current_user.rol in ['admin','veterinario'] %}
+              <a href="{{ url_for('users.usuarios_list') }}">Usuarios</a>
+              {% endif %}
+              <span class="navegacion__derecha">
+                👤 {{ current_user.nombre }} ({{ current_user.rol }}) ·
+                <a href="{{ url_for('sessions.logout') }}" class="salir"
+                  >Salir</a
+                >
+              </span>
+              {% endif %}
+              <button
+                id="theme-toggle"
+                class="theme-toggle"
+                type="button"
+                aria-pressed="false"
+                aria-label="Cambiar tema"
+              >
+                🌙
+              </button>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <div class="contenedor container">
+      {% with mensajes = get_flashed_messages(with_categories=true) %} {% if
+      mensajes %} {% for cat, txt in mensajes %}
+      <div
+        class="flash {{ 'flash--ok' if cat=='success' else 'flash--err' if cat=='error' else 'flash--warn' }}"
+      >
+        {{ txt }}
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <main role="main">{% block content %}{% endblock %}</main>
+    </div>
+
+    <script
+      src="{{ url_for('static', filename='js/scripts.js') }}"
+      defer
+    ></script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

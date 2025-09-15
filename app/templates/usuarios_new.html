@@ -1,0 +1,76 @@
+{% extends 'base.html' %} {% block title %}Nuevo usuario · Patitas QR{% endblock
+%} {% block content %}
+<section class="form-page">
+  <header class="list-header">
+    <h2 class="list-title">Nuevo usuario</h2>
+    <a
+      class="btn btn-outline btn-sm"
+      href="{{ url_for('users.usuarios_list') }}"
+      >← Volver a la lista</a
+    >
+  </header>
+
+  <div class="card form-narrow">
+    <form
+      method="post"
+      action="{{ url_for('users.usuarios_crear') }}"
+      class="form-grid"
+    >
+      <div class="grid-2">
+        <div class="field">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" name="nombre" required type="text" />
+        </div>
+        <div class="field">
+          <label for="apellido">Apellido</label>
+          <input id="apellido" name="apellido" required type="text" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="correo">Correo</label>
+        <input
+          id="correo"
+          name="correo"
+          type="email"
+          required
+          inputmode="email"
+          autocomplete="email"
+        />
+      </div>
+
+      {% if current_user.rol == 'admin' %}
+      <div class="field" style="max-width: 260px">
+        <label for="rol">Rol</label>
+        <select id="rol" name="rol" required>
+          <option value="veterinario">veterinario</option>
+          <option value="asistente" selected>asistente</option>
+        </select>
+      </div>
+      {% else %}
+      <input type="hidden" name="rol" value="asistente" />
+      {% endif %}
+
+      <div class="note">
+        Se enviará al correo una <strong>contraseña temporal</strong> para el
+        primer ingreso. Al iniciar sesión, el usuario deberá cambiarla por una
+        propia.
+      </div>
+      {% if current_user.rol != 'admin' %}
+      <div class="muted" style="font-size: 13px">
+        El usuario se creará como <strong>asistente</strong>.
+      </div>
+      {% endif %}
+
+      <div class="form-actions">
+        <a
+          class="btn btn-outline btn-eq"
+          href="{{ url_for('users.usuarios_list') }}"
+          >Cancelar</a
+        >
+        <button type="submit" class="btn btn-primary btn-eq">Crear</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

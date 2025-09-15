@@ -1,0 +1,49 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+uploads/
+instance/
+.env
+migrations/versions/*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Entornos virtuales
+.venv/
+venv/
+ENV/
+env/
+
+# IDE/Editor
+.vscode/
+.idea/
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Flask / instancia local
+instance/
+*.sqlite3
+*.db
+
+# Archivos generados en runtime (subidas)
+uploads/
+
+# Variables de entorno y secretos
+.env
+*.env
+
+# Logs y cachés
+*.log
+.cache/
+.pytest_cache/
+

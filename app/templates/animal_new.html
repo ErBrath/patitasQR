@@ -1,0 +1,82 @@
+<!-- animal_new.html -->
+{% extends 'base.html' %} {% block title %}Nuevo animal · Patitas QR{% endblock
+%} {% block content %}
+<section class="form-page">
+  <header class="list-header">
+    <h2 class="list-title">Nuevo animal</h2>
+    <a
+      class="btn btn-outline btn-sm btn-eq"
+      href="{{ url_for('animales.lista_animales') }}"
+      >← Volver</a
+    >
+  </header>
+
+  <div class="card">
+    <form
+      method="post"
+      action="{{ url_for('animales.crear_animal') }}"
+      class="form-grid"
+    >
+      <div class="field">
+        <label for="nombre">Nombre (opcional)</label>
+        <input id="nombre" type="text" name="nombre" placeholder="Ej: Pelusa" />
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="especie">Especie *</label>
+          <select id="especie" name="especie" required>
+            <option value="">— Seleccione —</option>
+            <option>Perro</option>
+            <option>Gato</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="sexo">Sexo</label>
+          <select id="sexo" name="sexo">
+            <option value="">Desconocido</option>
+            <option>Macho</option>
+            <option>Hembra</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="color">Color</label>
+        <input
+          id="color"
+          type="text"
+          name="color"
+          placeholder="Ej: Blanco"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="ubicacion_id">Ubicación (opcional)</label>
+        <select id="ubicacion_id" name="ubicacion_id">
+          <option value="">—</option>
+          {% for u in ubicaciones %}
+          <option value="{{ u.ubicacion_id }}">
+            {{ u.comuna }} — {{ u.nombre_sector }} {% if u.descripcion %} ({{
+            u.descripcion }}){% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <a
+          class="btn btn-outline btn-eq"
+          href="{{ url_for('animales.lista_animales') }}"
+          >Cancelar</a
+        >
+        <button type="submit" class="btn btn-primary btn-eq">
+          Guardar y generar QR
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

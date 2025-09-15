@@ -1,0 +1,67 @@
+{% extends 'base.html' %} {% block title %}Iniciar sesión · Patitas QR{%
+endblock %} {% block content %}
+<section class="auth">
+  <div class="auth-grid">
+    <div class="auth-card">
+      <h2 class="auth-title">Iniciar sesión</h2>
+
+      <form
+        method="post"
+        action="{{ url_for('sessions.login_post') }}"
+        class="form-grid"
+      >
+        <div class="field">
+          <label for="correo">Correo</label>
+          <input
+            id="correo"
+            type="email"
+            name="correo"
+            required
+            autocomplete="username"
+            inputmode="email"
+          />
+        </div>
+
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <div class="password-field">
+            <input
+              id="password"
+              type="password"
+              name="password"
+              required
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="pw-toggle"
+              aria-label="Mostrar u ocultar contraseña"
+            >
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+      </form>
+
+      <p class="auth-help">
+        <a href="{{ url_for('passwords.forgot_password') }}"
+          >¿Olvidaste tu contraseña?</a
+        >
+      </p>
+    </div>
+    <aside class="auth-illustration auth-card" aria-hidden="true">
+      <picture>
+        <img
+          class="auth-illustration__img no-zoom"
+          src="{{ url_for('static', filename='img/login.png') }}"
+          alt="Ilustración de un perrito y un gatito"
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
+    </aside>
+  </div>
+</section>
+{% endblock %}

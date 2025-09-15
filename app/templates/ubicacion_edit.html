@@ -1,0 +1,69 @@
+<!--ubicacion_edit.html-->
+{% extends 'base.html' %} {% block title %}Editar ubicación · Patitas QR{%
+endblock %} {% block content %}
+<section class="form-page">
+  <header class="list-header">
+    <h2 class="list-title">Editar ubicación #{{ ubicacion.ubicacion_id }}</h2>
+    <div style="margin-left:auto; display:flex; gap:8px; align-items:center">
+    <a
+      class="btn btn-outline btn-sm"
+      href="{{ url_for('ubicaciones.lista_ubicaciones') }}"
+      >← Volver a la lista</a
+    >
+    <form method="post"
+          action="{{ url_for('ubicaciones.eliminar_ubicacion', ubicacion_id=ubicacion.ubicacion_id) }}"
+          onsubmit="return confirm('¿Eliminar esta ubicación?')">
+      <button type="submit" class="btn btn-outline btn-sm btn-danger" style="margin-bottom: 10px;">🗑️ Eliminar</button>
+    </form>
+    </div>
+  </header>
+
+  <div class="card form-narrow">
+    <form
+      method="post"
+      action="{{ url_for('ubicaciones.guardar_edicion_ubicacion', ubicacion_id=ubicacion.ubicacion_id) }}"
+      class="form-grid"
+    >
+      <div class="field">
+        <label for="comuna">Comuna</label>
+        <input
+          id="comuna"
+          type="text"
+          name="comuna"
+          value="{{ ubicacion.comuna }}"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="nombre_sector">Sector</label>
+        <input
+          id="nombre_sector"
+          type="text"
+          name="nombre_sector"
+          value="{{ ubicacion.nombre_sector }}"
+          required
+        />
+      </div>
+      <div class="field">
+        <label for="descripcion">Descripción (opcional)</label>
+        <input
+          id="descripcion"
+          type="text"
+          name="descripcion"
+          value="{{ ubicacion.descripcion or '' }}"
+          placeholder="Plaza, parque, estación, etc."
+        />
+
+      <div class="form-actions">
+        <a
+          class="btn btn-outline"
+          href="{{ url_for('ubicaciones.lista_ubicaciones') }}"
+          >Cancelar</a
+        >
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,50 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 24px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 8px;
+}
+input,
+select {
+  width: 100%;
+  padding: 10px;
+}
+button {
+  padding: 8px 12px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.flash {
+  margin: 6px 0;
+  padding: 8px 10px;
+  background: #f9f9f9;
+  border-left: 4px solid #ef6c00;
+}
+.flash--ok {
+  border-left-color: #2e7d32;
+}
+.flash--err {
+  border-left-color: #c62828;
+}
+.flash--warn {
+  border-left-color: #ef6c00;
+}
+#insumos-rows .row select {
+  min-width: 240px;
+}
+#insumos-rows .row .rm-row {
+  height: 32px;
+}

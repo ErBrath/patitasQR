@@ -1,0 +1,130 @@
+{% extends 'base.html' %} {% block title %}Editar insumo · Patitas QR{% endblock
+%} {% block content %}
+<section class="form-page">
+  <header class="list-header">
+    <h2 class="list-title">Editar insumo #{{ insumo.insumo_id }} ({{ insumo.nombre }})</h2>
+    <div style="margin-left:auto; display:flex; gap:8px; align-items:center">
+    <a
+      class="btn btn-outline btn-sm"
+      href="{{ url_for('insumos.lista_insumos') }}"
+      >← Volver a la lista</a
+    >
+    <form method="post"
+          action="{{ url_for('insumos.eliminar_insumo', insumo_id=insumo.insumo_id) }}"
+          onsubmit="return confirm('¿Eliminar este insumo?')">
+      <button type="submit" class="btn btn-outline btn-sm btn-danger" style="margin-bottom: 10px;">🗑️ Eliminar</button>
+    </form>
+    </div>
+  </header>
+
+    <form
+      method="post"
+      action="{{ url_for('insumos.guardar_edicion_insumo', insumo_id=insumo.insumo_id) }}"
+      class="form-grid"
+    >
+      <div class="field">
+        <label for="nombre">Nombre</label>
+        <input
+          id="nombre"
+          type="text"
+          name="nombre"
+          value="{{ insumo.nombre }}"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="unidad">Unidad</label>
+        <input
+          id="unidad"
+          type="text"
+          name="unidad"
+          value="{{ insumo.unidad }}"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="fecha_vencimiento">Fecha de vencimiento</label>
+        <input
+          id="fecha_vencimiento"
+          type="date"
+          name="fecha_vencimiento"
+          value="{{ insumo.fecha_vencimiento }}"
+          min="{{ today }}"
+          required
+        />
+      </div>
+
+      <div class="card form-narrow">
+    <!-- Stock actual solo lectura -->
+    <p class="muted" style="margin: 0 0 10px">
+      <strong>Stock actual:</strong>
+      <span class="badge">{{ insumo.stock }} {{ insumo.unidad }}</span>
+    </p>
+
+      <!-- Ajuste de stock -->
+      <fieldset class="fieldset" style="margin-top: 4px">
+        <legend style="font-weight: 600">Ajustar stock</legend>
+        <div class="form-inline">
+          <div class="field" style="min-width: 220px">
+            <label for="delta">Cantidad a ajustar</label>
+            <input
+              id="delta"
+              name="delta"
+              type="number"
+              step="0.01"
+              placeholder="+/- 0.00"
+            />
+            <div class="help">
+              Ej.: <code>+5</code> para sumar, <code>-2.5</code> para restar.
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary btn-eq"
+            formaction="{{ url_for('insumos.ajustar_stock', insumo_id=insumo.insumo_id) }}"
+            formmethod="post"
+          >
+            Aplicar ajuste
+          </button>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <a class="btn btn-outline btn-eq" href="{{ url_for('insumos.lista_insumos') }}"
+          >Cancelar</a
+        >
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+(() => {
+  const delta = document.getElementById('delta');
+  if (!delta) return;
+  const form = delta.closest('form');
+  const btnAdjust = form?.querySelector('button[formaction]');
+  if (!form || !btnAdjust) return;
+
+  form.addEventListener('submit', (e) => {
+    // Solo validamos si el submitter es el botón "Aplicar ajuste"
+    if (e.submitter === btnAdjust) {
+      const v = (delta.value || '').trim();
+      if (v === '' || isNaN(v)) {
+        e.preventDefault();
+        delta.focus();
+        alert('Ingresa una cantidad para ajustar (puede ser positiva o negativa).');
+      }
+      // opcional: permitir 0
+      // if (Number(v) === 0) { e.preventDefault(); delta.focus(); alert('El ajuste no puede ser 0.'); }
+    }
+  });
+})();
+</script>
+{% endblock %}
+

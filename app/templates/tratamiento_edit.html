@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Editar tratamiento · #{{ t.tratamiento_id }} · Patitas QR{% endblock %}
+
+{% block content %}
+<section class="form-page">
+  <header class="list-header">
+    <h2 class="list-title">
+      Editar tratamiento #{{ t.tratamiento_id }} — Animal #{{ t.animal_id }} ({{ t.animal.nombre or '—' }})
+      {# Etiqueta de estado con color #}
+      {% set status = t.estado or '—' %}
+      {% set status_cls = 'pill-slate' %}
+      {% if status in ['Pendiente'] %}{% set status_cls = 'pill-amber' %}{% endif %}
+      {% if status in ['Aprobado','Completado'] %}{% set status_cls = 'pill-green' %}{% endif %}
+      {% if status in ['Rechazado'] %}{% set status_cls = 'pill-red' %}{% endif %}
+      <span class="pill {{ status_cls }}" style="margin-left:8px">{{ status }}</span>
+    </h2>
+
+    <div class="header-actions" style="display:flex; gap:8px; flex-wrap:wrap">
+      <a class="btn btn-outline btn-sm" href="{{ url_for('animales.tratamientos_animal', animal_id=t.animal_id) }}">← Volver a tratamientos</a>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('animales.detalle_animal', animal_id=t.animal_id) }}">Ver ficha del animal</a>
+    </div>
+  </header>
+
+
+  <div class="card form-narrow">
+    <form method="post"
+          action="{{ url_for('tratamientos.actualizar_tratamiento', tratamiento_id=t.tratamiento_id) }}"
+          class="form-grid">
+      <div class="grid-2">
+        <div class="field">
+          <label for="tipo">Tipo *</label>
+          <select id="tipo" name="tipo" required {% if t.estado != 'Pendiente' %}disabled{% endif %}>
+            <option value="">— Seleccione —</option>
+            {% for opt in ['Vacuna','Desparasitación','Curación','Cirugía','Otro'] %}
+              <option value="{{ opt }}" {{ 'selected' if t.tipo==opt else '' }}>{{ opt }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="descripcion">Descripción</label>
+          <input id="descripcion" name="descripcion" type="text" placeholder="Detalle breve del tratamiento"
+                 value="{{ t.descripcion or '' }}" {% if t.estado != 'Pendiente' %}disabled{% endif %}>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Fecha</label>
+          <input type="text" value="{{ t.fecha_tratamiento.strftime('%d-%m-%Y') if t.fecha_tratamiento else '—' }}" disabled>
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <input type="text" value="{{ t.estado }}" disabled>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        {% if t.estado == 'Pendiente' %}
+          <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+
+  <h3 class="section-title">Insumos del tratamiento</h3>
+  <div class="card">
+    {% if t.detalle_insumos and t.detalle_insumos|length %}
+      <table class="table table--list">
+        <thead>
+          <tr>
+            <th style="width: 150px;">Insumo</th>
+            <th style="width:100px">Cantidad</th>
+            {% if t.estado == 'Pendiente' and current_user.is_authenticated and current_user.rol in ['veterinario','asistente','admin'] %}
+              <th style="width:240px">Acciones</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in t.detalle_insumos %}
+          <tr>
+            <td>{{ d.insumo.nombre }} <span class="badge">{{ d.insumo.unidad }}</span></td>
+            <td>{{ d.cantidad }}</td>
+
+            {% if t.estado == 'Pendiente' and current_user.is_authenticated and current_user.rol in ['veterinario','asistente','admin'] %}
+              <td class="actions">
+                <!-- Actualizar cantidad -->
+                <form method="post"
+                      action="{{ url_for('tratamientos.actualizar_cantidad_detalle', tratamiento_id=t.tratamiento_id, insumo_id=d.insumo_id) }}"
+                      class="inline-form">
+                  <label for="cant_{{ d.insumo_id }}" class="sr-only">Nueva cantidad</label>
+                  <input id="cant_{{ d.insumo_id }}" name="cantidad" type="number" step="0.01" min="0.01" placeholder="Cantidad">
+                  <button type="submit" class="btn btn-outline btn-sm" style="margin-bottom: 10px;">Actualizar</button>
+                </form>
+
+                <!-- Eliminar línea -->
+                <form method="post"
+                      action="{{ url_for('tratamientos.eliminar_linea_detalle', tratamiento_id=t.tratamiento_id, insumo_id=d.insumo_id) }}"
+                      class="inline-form">
+                  <button type="submit" class="btn btn-outline btn-sm btn-danger"
+                          onclick="return confirm('¿Quitar este insumo del tratamiento?')">
+                    Quitar
+                  </button>
+                </form>
+              </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state">Sin insumos en este tratamiento.</div>
+    {% endif %}
+  </div>
+
+  {% if t.estado == 'Pendiente' and current_user.is_authenticated and current_user.rol in ['veterinario','asistente', 'admin'] %}
+    <h3 class="section-title">Agregar insumo</h3>
+    <div class="card">
+      <form method="post"
+            action="{{ url_for('tratamientos.agregar_linea_detalle', tratamiento_id=t.tratamiento_id) }}"
+            class="form-inline">
+        <div class="field" style="min-width:260px">
+          <label for="insumo_id">Insumo *</label>
+          <select id="insumo_id" name="insumo_id" required>
+            <option value="">—</option>
+            {% for i in insumos or [] %}
+              <option value="{{ i.insumo_id }}">{{ i.nombre }} (stock: {{ i.stock }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="cantidad">Cantidad *</label>
+          <input id="cantidad" name="cantidad" type="number" step="0.01" min="0.01" required placeholder="0.00">
+        </div>
+        <button type="submit" class="btn btn-primary btn-eq">Agregar</button>
+      </form>
+      <div class="help mt-2">
+        Si agregas el mismo insumo más de una vez, se <strong>suma</strong> a la cantidad existente.
+      </div>
+    </div>
+  {% endif %}
+
+  {% if t.estado == 'Pendiente' and current_user.is_authenticated and current_user.rol in ['veterinario','admin'] %}
+    <div class="form-actions" style="margin-top:12px">
+      <form method="post" action="{{ url_for('tratamientos.aprobar_tratamiento', tratamiento_id=t.tratamiento_id) }}" class="inline-form">
+        <button type="submit" class="btn btn-primary">Aprobar</button>
+      </form>
+      <form method="post" action="{{ url_for('tratamientos.rechazar_tratamiento', tratamiento_id=t.tratamiento_id) }}" class="inline-form">
+        <button type="submit" class="btn btn-outline btn-danger">Rechazar</button>
+      </form>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Evita enviar "Actualizar" con cantidad vacía o inválida
+document.addEventListener('submit', function(e){
+  const form = e.target;
+  if (form.matches('form[action*="/detalle/"][action$="/actualizar"]')) {
+    const input = form.querySelector('input[name="cantidad"]');
+    const v = (input.value || '').trim();
+    if (v === '' || isNaN(v) || Number(v) <= 0) {
+      e.preventDefault();
+      input.focus();
+      alert('Ingresa una cantidad válida (> 0).');
+    }
+  }
+});
+</script>
+{% endblock %}

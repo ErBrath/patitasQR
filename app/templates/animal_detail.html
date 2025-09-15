@@ -1,0 +1,150 @@
+<!-- animals_detail.html -->
+{% extends 'base.html' %}
+{% block title %}Animal #{{ animal.animal_id }} · Patitas QR{% endblock %}
+
+{% block content %}
+<section class="detail-page">
+  <header class="detail-header">
+    <h2>Animal #{{ animal.animal_id }} ({{ animal.nombre }})</h2>
+    <div style="margin-left:auto; display:flex; gap:8px; align-items:center">
+      <a class="btn btn-outline btn-eq" href="{{ url_for('animales.lista_animales') }}">← Volver</a>
+      <a class="btn btn-outline btn-sm btn-eq" href="{{ url_for('animales.editar_animal', animal_id=animal.animal_id) }}">
+        ✎ Editar
+      </a>
+      <form method="post"
+          action="{{ url_for('animales.eliminar_animal', animal_id=animal.animal_id) }}"
+          onsubmit="return confirm('Se eliminará este animal y sus registros (fotos, historial y tratamientos). ¿Continuar?')">
+      <button type="submit" class="btn btn-outline btn-sm btn-danger" style="margin-bottom: 10px;">🗑️ Eliminar</button>
+    </form>
+    </div>
+  </header>
+
+  <div class="detail-grid">
+    <article class="card">
+      <div class="detail-photo">
+        {% if animal.fotos and animal.fotos|length %}
+          <img src="{{ url_for('media.media', filename=animal.fotos[0].filename) }}"
+               alt="{{ animal.fotos[0].titulo or 'Foto' }}">
+          {% if animal.fotos|length > 1 %}
+          <div class="sr-only">
+            {% for f in animal.fotos[1:] %}
+              <img
+                src="{{ url_for('media.media', filename=f.filename) }}"
+                alt="{{ f.titulo or 'Foto adicional' }}"
+                loading="lazy"
+              />
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% else %}
+          <div class="photo-placeholder">Foto</div>
+        {% endif %}
+      </div>
+
+      {% if animal.nombre %}
+        <p class="detail-name"><strong>Nombre:</strong> {{ animal.nombre }}</p>
+      {% endif %}
+      <p class="detail-meta">
+        <span class="badge">{{ animal.especie }}</span>
+        <span class="badge badge-muted">{{ animal.sexo or '—' }}</span>
+        {% if animal.color %}<span class="badge badge-muted">{{ animal.color }}</span>{% endif %}
+      </p>
+      <p class="muted small">Registrado: {{ animal.fecha_registro }}</p>
+
+      {% if animal.ubicacion %}
+        <p><strong>Ubicación:</strong> {{ animal.ubicacion.comuna }} — {{ animal.ubicacion.nombre_sector }}</p>
+      {% endif %}
+
+      <div class="detail-actions">
+        <a class="btn btn-outline btn-sm" href="{{ url_for('animales.tratamientos_animal', animal_id=animal.animal_id) }}">
+          Ver tratamientos
+        </a>
+        <a class="btn btn-outline btn-sm" href="{{ url_for('animales.historial_animal', animal_id=animal.animal_id) }}">
+          Ver historial
+        </a>
+      </div>
+    </article>
+
+    <!-- seccion ubicacion y QR -->
+    <aside class="card">
+      <h3 class="section-title">Cambiar ubicación</h3>
+      <form method="post" action="{{ url_for('animales.cambiar_ubicacion', animal_id=animal.animal_id) }}"
+            class="form-grid form-inline">
+        <div class="field">
+          <label for="ubicacion_id">Ubicación</label>
+          <select id="ubicacion_id" name="ubicacion_id">
+            <option value="">—</option>
+            {% for u in ubicaciones %}
+              <option value="{{ u.ubicacion_id }}" {{ 'selected' if animal.ubicacion_id==u.ubicacion_id else '' }}>
+                {{ u.comuna }} — {{ u.nombre_sector }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Actualizar</button>
+      </form>
+
+      <hr class="soft" />
+
+      <h3 class="section-title">QR público</h3>
+      <div class="qr-box">
+        <img src="{{ url_for('publico.qr_png', token=animal.codigo_qr) }}" alt="QR" width="180" height="180" />
+        <a class="link-row break-all"
+           href="{{ url_for('publico.ficha_publica', token=animal.codigo_qr, _external=True) }}">
+          {{ url_for('publico.ficha_publica', token=animal.codigo_qr, _external=True) }}
+        </a>
+        <div class="qr-actions" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px">
+          <a class="btn btn-outline btn-sm"
+            href="{{ url_for('publico.qr_png', token=animal.codigo_qr) }}"
+            download="patitasqr_animal_{{ animal.animal_id }}.png">
+            ⬇️ Descargar PNG
+          </a>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Fotos -->
+  <section class="media-section">
+    <header class="media-header card">
+      <h2>Fotos</h2>
+      <form method="post" action="{{ url_for('animales.subir_foto', animal_id=animal.animal_id) }}"
+            enctype="multipart/form-data" class="">
+        <div class="field">
+          <label for="foto">Archivo (png, jpg, jpeg, gif, webp) *</label>
+          <input class="input-file" id="foto" type="file" name="foto" accept="image/*" required>
+        </div>
+        <div class="field">
+          <label for="titulo">Título (opcional)</label>
+          <input id="titulo" type="text" name="titulo" placeholder="Ej: 'En el parque'">
+        </div>
+        <button type="submit" class="btn btn-primary btn-eq">Subir</button>
+      </form>
+    </header>
+
+    {% if animal.fotos and animal.fotos|length %}
+      <ul class="media-grid">
+        {% for f in animal.fotos %}
+          <li class="media-card">
+            <img src="{{ url_for('media.media', filename=f.filename) }}" alt="{{ f.titulo or 'Foto' }}">
+            <div class="media-meta">
+              <div class="media-title">{{ f.titulo or '—' }}</div>
+              <div class="media-date muted small">{{ f.fecha_subida.strftime('%d/%m/%Y') }}</div>
+              <form method="post"
+                    action="{{ url_for('animales.eliminar_foto', animal_id=animal.animal_id, foto_id=f.foto_id) }}"
+                    class="media-actions">
+                <button type="submit" class="btn btn-outline btn-sm btn-danger"
+                        onclick="return confirm('¿Eliminar esta foto?')">
+                  Eliminar
+                </button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-state">Sin fotos.</div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}
+

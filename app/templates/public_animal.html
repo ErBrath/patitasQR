@@ -1,0 +1,117 @@
+<!-- app/templates/public_animal.html -->
+{% extends 'base.html' %} {% block title %}Ficha pública · Patitas QR{% endblock
+%} {% block content %}
+
+<section class="detail-page">
+  <header class="list-header">
+    <h2 class="list-title">
+      Ficha pública {{'de ' ~ animal.nombre if animal.nombre else '' }}
+    </h2>
+  </header>
+
+  <article class="card">
+    <div class="detail-photo" style="aspect-ratio: 1.6/1">
+      {% if animal.fotos and animal.fotos|length %}
+      <img
+        src="{{ url_for('media.media', filename=animal.fotos[0].filename) }}"
+        alt="Foto del animal"
+      />
+
+      {% if animal.fotos|length > 1 %}
+      <div class="sr-only">
+        {% for f in animal.fotos[1:] %}
+        <img
+          src="{{ url_for('media.media', filename=f.filename) }}"
+          alt="{{ f.titulo or 'Foto adicional' }}"
+          loading="lazy"
+        />
+        {% endfor %}
+      </div>
+      {% endif %} {% else %}
+      <div class="photo-placeholder">Sin foto</div>
+      {% endif %}
+    </div>
+
+    {% if animal.nombre %}
+    <p class="detail-name"><strong>Nombre:</strong> {{ animal.nombre }}</p>
+    {% endif %}
+
+    <p class="detail-meta">
+      <span class="badge">{{ animal.especie }}</span>
+      {% if animal.color %}<span class="badge badge-muted"
+        >{{ animal.color }}</span
+      >{% endif %}
+    </p>
+
+    {% if animal.ubicacion %}
+    <p>
+      <strong>Última ubicación:</strong> {{ animal.ubicacion.comuna }} — {{
+      animal.ubicacion.nombre_sector }}
+    </p>
+    {% endif %} {% if animal.historial_estados and
+    animal.historial_estados|length %} {% set ult = (animal.historial_estados |
+    sort(attribute='fecha_estado', reverse=True) | first) %}
+    <p>
+      <strong>Fecha Estado:</strong> {{ ult.fecha_estado.strftime('%d-%m-%Y') }}
+    </p>
+    <p><strong>Estado:</strong> {{ ult.estado }}</p>
+    <p><strong>Nota:</strong> {{ ult.observaciones or '—' }}</p>
+    {% endif %}
+  </article>
+
+  <article class="card info-ficha" style="margin-top: 12px">
+    <h3 class="section-title" style="margin-top: 0">
+      ¿Necesitas ayuda o información?
+    </h3>
+    <ul class="detail-list">
+      <li>📞 Teléfono: +56 9 1234 5678</li>
+      <li>
+        💬 WhatsApp:
+        <a target="_blank" rel="noopener" href="https://wa.me/56912345678"
+          >+56 9 1234 5678</a
+        >
+      </li>
+      <li>
+        ✉️ Correo: <a href="mailto:patitasqr@gmail.com">patitasqr@gmail.com</a>
+      </li>
+      <li>
+        📍 Dirección:
+        <a
+          target="_blank"
+          rel="noopener"
+          href="https://www.google.com/maps/search/?api=1&query=Ilustre Municipalidad de Requinoa"
+          >Av. Comercio #121, Requínoa</a
+        >
+      </li>
+    </ul>
+    <p class="muted small" style="margin-top: 6px">
+      Si reconoces a este animal o tienes información útil, contáctanos por
+      estos medios.
+    </p>
+  </article>
+
+  <article class="card" style="margin-top: 12px">
+    <h3 class="section-title">Últimos tratamientos</h3>
+    {% if tratamientos and tratamientos|length %}
+    <ul class="detail-list">
+      {% for t in tratamientos %}
+      <li>
+        {{ t.fecha_tratamiento.strftime('%d-%m-%Y') if t.fecha_tratamiento else
+        '—' }} — {{ t.tipo }} {{ '— ' ~ t.descripcion if t.descripcion else ''
+        }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">No registra tratamientos.</div>
+    {% endif %}
+
+    <p class="muted" style="margin-top: 10px">
+      <strong
+        >Información referencial para evitar duplicar tratamientos.</strong
+      >
+      Ante dudas, acuda a la veterinaria municipal y evite automedicar.
+    </p>
+  </article>
+</section>
+{% endblock %}

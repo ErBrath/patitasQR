@@ -1,0 +1,121 @@
+<!-- app/templates/animal_historial.html -->
+{% extends 'base.html' %} {% block title %}Historial · Animal #{{
+animal.animal_id }} · Patitas QR{% endblock %} {% block content %}
+<section class="list-page">
+  <header class="list-header">
+    <h2 class="list-title">
+      Historial — Animal #{{ animal.animal_id }} {{ '(' ~ (animal.nombre or '—')
+      ~ ')' }}
+    </h2>
+    <a
+      class="btn btn-outline btn-sm"
+      href="{{ url_for('animales.detalle_animal', animal_id=animal.animal_id) }}"
+      >← Volver a la ficha</a
+    >
+  </header>
+
+  <h3 class="section-title">Historial de estado</h3>
+
+  {% if animal.historial_estados and animal.historial_estados|length %}
+  <div class="table-wrap">
+    <table class="table table--list">
+      <thead>
+        <tr>
+          <th style="width: 120px">Fecha</th>
+          <th style="width: 160px">Estado</th>
+          <th>Observaciones</th>
+          <th style="width: 140px">Próx. control</th>
+          {# ← NUEVO #}
+          <th style="width: 180px">Registrado por</th>
+          <th style="width: 110px">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in animal.historial_estados|sort(attribute='fecha_estado',
+        reverse=True) %} {% set estado = h.estado or '—' %} {% set cls =
+        'badge-slate' %} {% if estado == 'Recuperado' %}{% set cls =
+        'badge-green' %}{% endif %} {% if estado == 'Fallecido' %}{% set cls =
+        'badge-red' %}{% endif %} {% if estado == 'En tratamiento' %}{% set cls
+        = 'badge-sky' %}{% endif %} {% if estado == 'Observación' %}{% set cls =
+        'badge-amber' %}{% endif %}
+
+        <tr>
+          <td>
+            {{ h.fecha_estado.strftime('%d-%m-%Y') if h.fecha_estado else '—' }}
+          </td>
+          <td><span class="badge {{ cls }}">{{ estado }}</span></td>
+          <td>{{ h.observaciones or '—' }}</td>
+          <td>
+            {{ h.proximo_control.strftime('%d-%m-%Y') if h.proximo_control else
+            '—' }}
+          </td>
+          {# ← NUEVO #}
+          <td>{{ h.usuario.nombre if h.usuario else '—' }}</td>
+          <td class="actions">
+            <form
+              method="post"
+              action="{{ url_for('animales.eliminar_historial', animal_id=animal.animal_id, historial_id=h.historial_id) }}"
+              style="display: inline"
+            >
+              <button
+                type="submit"
+                class="btn btn-outline btn-sm btn-danger"
+                onclick="return confirm('¿Eliminar este estado del animal?')"
+              >
+                Eliminar
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">Sin historial.</div>
+  {% endif %}
+
+  <h3 class="section-title">Agregar estado</h3>
+  <div class="card">
+    <form
+      method="post"
+      action="{{ url_for('animales.agregar_historial', animal_id=animal.animal_id) }}"
+      class="form-grid form-inline"
+    >
+      <div class="field" style="min-width: 220px">
+        <label for="estado">Estado *</label>
+        <select id="estado" name="estado" required>
+          <option value="">—</option>
+          {% for e in ESTADO_ANIMAL %}
+          <option value="{{ e }}">{{ e }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field" style="min-width: 200px">
+        <label for="proximo_control">Próximo control (opcional)</label>
+        <input
+          id="proximo_control"
+          type="date"
+          name="proximo_control"
+          min="{{ today }}"
+        />
+      </div>
+
+      <div class="field" style="flex: 1 1 100%">
+        <label for="observaciones">Observaciones</label>
+        <textarea
+          id="observaciones"
+          name="observaciones"
+          rows="3"
+          placeholder="Detalle del estado del animal"
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <button type="submit" class="btn btn-primary btn-eq">Agregar</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
