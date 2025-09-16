@@ -6,7 +6,6 @@ __pycache__/
 uploads/
 instance/
 .env
-migrations/versions/*
 
 # Python
 __pycache__/
