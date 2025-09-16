@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% block content %}
 <h2>Crear administrador (solo si no hay usuarios)</h2>
-<form method="post" action="{{ url_for('session.crear_admin_post') }}">
+<form method="post" action="{{ url_for('sessions.crear_admin_post') }}">
   <label>Nombre</label><input name="nombre" required /> <label>Apellido</label
   ><input name="apellido" required /> <label>Correo</label
   ><input name="correo" type="email" required /> <label>Contraseña</label
