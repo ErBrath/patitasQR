@@ -15,10 +15,10 @@ def _normalize_db_url(url: str | None) -> str:
         return ""
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
-    # fuerza el driver psycopg3 si la URL no lo trae
     if url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+psycopg://", 1)
     return url
+
 
 
 class Config:
