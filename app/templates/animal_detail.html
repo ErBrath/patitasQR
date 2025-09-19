@@ -76,7 +76,7 @@
             <option value="">—</option>
             {% for u in ubicaciones %}
               <option value="{{ u.ubicacion_id }}" {{ 'selected' if animal.ubicacion_id==u.ubicacion_id else '' }}>
-                {{ u.comuna }} — {{ u.nombre_sector }}
+                {{ u.comuna }} — {{ u.nombre_sector }} {% if u.descripcion %} — {{ u.descripcion or "" }} {%endif%}
               </option>
             {% endfor %}
           </select>

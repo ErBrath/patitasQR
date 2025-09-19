@@ -436,6 +436,7 @@ textarea:focus {
   background: #fff;
   color: var(--primary);
   border-color: var(--primary);
+  height: 44px;
 }
 .btn-outline:hover {
   background: #f0f7f5;
@@ -696,7 +697,7 @@ textarea:focus {
   gap: 10px;
   justify-content: flex-end;
   flex-wrap: wrap;
-  margin-top: 6px;
+  align-items: flex-end;
 }
 .grid-2 {
   display: grid;

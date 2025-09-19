@@ -221,3 +221,5 @@ class FotoAnimal(db.Model):
 
     animal = db.relationship("Animal", back_populates="fotos")
     usuario = db.relationship("Usuario")
+
+

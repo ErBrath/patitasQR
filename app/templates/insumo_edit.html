@@ -55,6 +55,12 @@
           required
         />
       </div>
+      <div class="form-actions">
+        <a class="btn btn-outline btn-eq" href="{{ url_for('insumos.lista_insumos') }}"
+          >Cancelar</a
+        >
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      </div>
 
       <div class="card form-narrow">
     <!-- Stock actual solo lectura -->
@@ -91,13 +97,6 @@
           </button>
         </div>
       </fieldset>
-
-      <div class="form-actions">
-        <a class="btn btn-outline btn-eq" href="{{ url_for('insumos.lista_insumos') }}"
-          >Cancelar</a
-        >
-        <button type="submit" class="btn btn-primary">Guardar cambios</button>
-      </div>
     </form>
   </div>
 </section>

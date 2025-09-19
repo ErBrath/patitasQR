@@ -27,8 +27,11 @@ class Config:
 
     # Si existe DATABASE_URL la usamos (Render). Si no, usamos una DB local.
     SQLALCHEMY_DATABASE_URI = _normalize_db_url(
-        os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/patitasqr")
-    )
+    os.getenv("LOCAL_DATABASE_URL")
+    or os.getenv("DATABASE_URL")
+    or "postgresql+psycopg://postgres@localhost:5432/patitas_db"
+)
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # (opcional, mejora la estabilidad de conexiones en Render)
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}

@@ -149,7 +149,7 @@ def aprobar_tratamiento(tratamiento_id: int):
 
 # Rechazar tratamiento
 @bp.post("/tratamientos/<int:tratamiento_id>/rechazar")
-@roles_required("veterinario")
+@roles_required("veterinario", "admin")
 def rechazar_tratamiento(tratamiento_id: int):
     t = Tratamiento.query.get_or_404(tratamiento_id)
     if t.estado != "Pendiente":

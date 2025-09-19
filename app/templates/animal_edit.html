@@ -5,7 +5,7 @@
 {% block content %}
 <section class="form-page">
   <header class="list-header">
-    <h2 class="list-title">Editar animal #{{ animal.animal_id }}</h2>
+    <h2 class="list-title">Editar animal #{{ animal.animal_id }}{%if animal.nombre%} ({{animal.nombre}}) {%endif%} </h2>
     <a class="btn btn-outline btn-sm btn-eq"
        href="{{ url_for('animales.detalle_animal', animal_id=animal.animal_id) }}">← Volver</a>
   </header>
