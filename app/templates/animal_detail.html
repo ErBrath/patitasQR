@@ -2,6 +2,7 @@
 {% extends 'base.html' %}
 {% block title %}Animal #{{ animal.animal_id }} · Patitas QR{% endblock %}
 
+
 {% block content %}
 <section class="detail-page">
   <header class="detail-header">
@@ -18,8 +19,8 @@
     </form>
     </div>
   </header>
-
   <div class="detail-grid">
+    <!-- detalle animal -->
     <article class="card">
       <div class="detail-photo">
         {% if animal.fotos and animal.fotos|length %}
@@ -64,6 +65,7 @@
         </a>
       </div>
     </article>
+    <!-- fin detalle animal -->
 
     <!-- seccion ubicacion y QR -->
     <aside class="card">
@@ -101,10 +103,12 @@
           </a>
       </div>
     </aside>
+    <!-- fin seccion ubicacion y QR -->
   </div>
 
-  <!-- Fotos -->
+  <!-- Seccion Fotos -->
   <section class="media-section">
+    <!--subir foto-->
     <header class="media-header card">
       <h2>Fotos</h2>
       <form method="post" action="{{ url_for('animales.subir_foto', animal_id=animal.animal_id) }}"
@@ -120,7 +124,9 @@
         <button type="submit" class="btn btn-primary btn-eq">Subir</button>
       </form>
     </header>
+    <!--fin subir foto-->
 
+    <!-- galeria de fotos -->
     {% if animal.fotos and animal.fotos|length %}
       <ul class="media-grid">
         {% for f in animal.fotos %}
@@ -144,6 +150,7 @@
     {% else %}
       <div class="empty-state">Sin fotos.</div>
     {% endif %}
+    <!-- fin galeria de fotos -->
   </section>
 </section>
 {% endblock %}

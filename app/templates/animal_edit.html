@@ -10,6 +10,7 @@
        href="{{ url_for('animales.detalle_animal', animal_id=animal.animal_id) }}">← Volver</a>
   </header>
 
+<!-- form de edición de animal -->
   <div class="card">
     <form method="post"
           action="{{ url_for('animales.guardar_edicion_animal', animal_id=animal.animal_id) }}"
@@ -24,8 +25,8 @@
         <div class="field">
           <label for="especie">Especie *</label>
           <select id="especie" name="especie" required>
-            <option value="Perro" {{ 'selected' if animal.especie=='Perro' else '' }}>Perro</option>
-            <option value="Gato"  {{ 'selected' if animal.especie=='Gato'  else '' }}>Gato</option>
+            <option value="Canino" {{ 'selected' if animal.especie=='Canino' else '' }}>Canino</option>
+            <option value="Felino"  {{ 'selected' if animal.especie=='Felino'  else '' }}>Felino</option>
           </select>
         </div>
 
@@ -62,4 +63,5 @@
     </form>
   </div>
 </section>
+<!-- fin form de edición de animal -->
 {% endblock %}
