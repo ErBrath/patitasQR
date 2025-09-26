@@ -1,12 +1,11 @@
 # app/services/mail.py
-import os
-import smtplib
+import os, base64, json, time, smtplib, requests
 from email.message import EmailMessage
 from flask import current_app
-import requests
 
+# ---------- SMTP (para local) ----------
 def _send_via_smtp(to: str, subject: str, body: str) -> None:
-    server  = current_app.config.get("MAIL_SERVER")
+    server  = current_app.config.get("MAIL_SERVER", "smtp.gmail.com")
     port    = int(current_app.config.get("MAIL_PORT", 587))
     use_tls = bool(current_app.config.get("MAIL_USE_TLS", True))
     user    = current_app.config.get("MAIL_USERNAME")
@@ -24,58 +23,58 @@ def _send_via_smtp(to: str, subject: str, body: str) -> None:
     msg.set_content(body)
 
     with smtplib.SMTP(server, port, timeout=20) as s:
-        if use_tls:
-            s.starttls()
-        if user and pwd:
-            s.login(user, pwd)
+        if use_tls: s.starttls()
+        if user and pwd: s.login(user, pwd)
         s.send_message(msg)
 
-def _send_via_sendgrid(to: str, subject: str, body: str) -> None:
-    api_key = os.getenv("SENDGRID_API_KEY")
-    if not api_key:
-        raise RuntimeError("Falta SENDGRID_API_KEY")
-    sender = current_app.config.get("MAIL_DEFAULT_SENDER") or current_app.config.get("MAIL_USERNAME") or "no-reply@example.com"
+# ---------- Gmail API (para Render) ----------
+def _gmail_get_access_token(client_id: str, client_secret: str, refresh_token: str) -> str:
     r = requests.post(
-        "https://api.sendgrid.com/v3/mail/send",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "personalizations": [{"to": [{"email": to}]}],
-            "from": {"email": sender},
-            "subject": subject,
-            "content": [{"type": "text/plain", "value": body}],
-        },
-        timeout=20,
-    )
-    if r.status_code >= 300:
-        raise RuntimeError(f"SendGrid error {r.status_code}: {r.text}")
-
-def _send_via_mailgun(to: str, subject: str, body: str) -> None:
-    api_key = os.getenv("MAILGUN_API_KEY")
-    domain  = os.getenv("MAILGUN_DOMAIN")  # p.ej. mg.tudominio.com
-    if not (api_key and domain):
-        raise RuntimeError("Faltan MAILGUN_API_KEY o MAILGUN_DOMAIN")
-    sender = current_app.config.get("MAIL_DEFAULT_SENDER") or f"no-reply@{domain}"
-    r = requests.post(
-        f"https://api.mailgun.net/v3/{domain}/messages",
-        auth=("api", api_key),
+        "https://oauth2.googleapis.com/token",
         data={
-            "from": sender,
-            "to": [to],
-            "subject": subject,
-            "text": body,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "refresh_token": refresh_token,
+            "grant_type": "refresh_token",
         },
         timeout=20,
     )
-    if r.status_code >= 300:
-        raise RuntimeError(f"Mailgun error {r.status_code}: {r.text}")
+    if r.status_code != 200:
+        raise RuntimeError(f"Gmail token error {r.status_code}: {r.text}")
+    return r.json()["access_token"]
+
+def _send_via_gmail_api(to: str, subject: str, body: str) -> None:
+    # Requiere vars de entorno y que el remitente esté en esa cuenta de Gmail
+    client_id     = os.getenv("GOOGLE_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+    refresh_token = os.getenv("GMAIL_REFRESH_TOKEN")
+    sender        = current_app.config.get("MAIL_DEFAULT_SENDER") 
+
+    if not (client_id and client_secret and refresh_token and sender):
+        raise RuntimeError("Faltan GOOGLE_CLIENT_ID/SECRET, GMAIL_REFRESH_TOKEN o MAIL_DEFAULT_SENDER")
+
+    access_token = _gmail_get_access_token(client_id, client_secret, refresh_token)
+
+    # Construye el MIME y codifícalo en base64url (raw)
+    msg = EmailMessage()
+    msg["From"] = sender
+    msg["To"] = to
+    msg["Subject"] = subject
+    msg.set_content(body)
+    raw = base64.urlsafe_b64encode(msg.as_bytes()).decode("utf-8")
+
+    r = requests.post(
+        "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
+        data=json.dumps({"raw": raw}),
+        timeout=20,
+    )
+    if r.status_code not in (200, 202):
+        raise RuntimeError(f"Gmail send error {r.status_code}: {r.text}")
 
 def send_email(to: str, subject: str, body: str) -> None:
     transport = (current_app.config.get("MAIL_TRANSPORT") or os.getenv("MAIL_TRANSPORT") or "smtp").lower()
-    if transport == "sendgrid":
-        return _send_via_sendgrid(to, subject, body)
-    if transport == "mailgun":
-        return _send_via_mailgun(to, subject, body)
+    if transport == "gmail_api":
+        return _send_via_gmail_api(to, subject, body)
     return _send_via_smtp(to, subject, body)
+
