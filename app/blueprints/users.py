@@ -94,6 +94,10 @@ def usuario_cambiar_rol(usuario_id:int):
     if nuevo not in ("admin", "veterinario", "asistente"):
         abort(400, "Rol inválido")
 
+    if u.usuario_id == current_user.usuario_id and u.rol == "admin" and nuevo != "admin":
+        flash("No puedes cambiar tu propio rol (perderías privilegios de admin).", "error")
+        return redirect(url_for("users.usuarios_list"))
+
     if u.rol == "admin" and nuevo != "admin" and _admins_activos_count() <= 1:
         flash("No puedes cambiar el rol del único admin activo.", "error")
         return redirect(url_for("users.usuarios_list"))
