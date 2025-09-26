@@ -56,7 +56,9 @@ class Config:
     MAIL_USE_TLS = _bool(os.getenv("MAIL_USE_TLS", "1"), True)
     MAIL_USERNAME = os.getenv("MAIL_USERNAME", "")       
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
-    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", MAIL_USERNAME or "no-reply@example.com")
+    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", MAIL_USERNAME)
+    MAIL_TRANSPORT = os.getenv("MAIL_TRANSPORT", "smtp").lower()  # "smtp" | "sendgrid" | "mailgun"
+
 
 def get_config():
     return Config()
